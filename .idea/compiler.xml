@@ -10,7 +10,7 @@
         <module name="Resource-Server" />
         <module name="Eureka-Server" />
         <module name="OAuth-Server" />
-        <module name="Dashboard-Service" />
+        <module name="Dash-Service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

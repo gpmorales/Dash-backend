@@ -196,7 +196,7 @@ public class AuthenticationService {
     }
 
 
-    // TODO
+    // TODO *** *** *** *** *** *** ***
     private ResponseEntity<String> sendVerificationEmail(String email, String activationToken) throws WebClientException {
         String url = ""; //getApplicationUrl() + "/verifyRegistration?token= + token;
         log.info("Click the link to verify your account: {}", url);

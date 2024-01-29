@@ -1,14 +1,14 @@
 server:
   port: 8081
 
-spring:
-  application:
-    name: Resource-Server
-  security:
-    oauth2:
-      resource-server:
-        jwt:
-          issuer-uri: http://auth-server:9000
+#spring:
+#  application:
+#    name: Resource-Server
+#  security:
+#    oauth2:
+#      resource-server:
+#        jwt:
+#          issuer-uri: http://auth-server:9000
 
 
 application:
@@ -18,10 +18,10 @@ application:
 cloud:
   aws:
     credentials:
-      access-key: AKIA6GBMBK5VRFG6KFVK
-      secret-key: bC8O2z9wrxCo1XlUz1/4bhdX5wcdVjSUKMGu9o2
+      access-key: AKIA6GBMBK5VRAWEST5I
+      secret-key: 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
     region:
-      static: us-east-1
+      static: us-east-2
     stack:
       auto: false
 

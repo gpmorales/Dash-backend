@@ -10,19 +10,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Widget {
 
-    @JsonProperty("Name")
+    @JsonProperty("name")
     private String widgetName;
 
-    @JsonProperty("bottom-left-x-position")
+    @JsonProperty("bottom-left-X-position")
     private Integer bottomLeftXPosition;
 
-    @JsonProperty("bottom-left-y-position")
+    @JsonProperty("bottom-left-Y-position")
     private Integer bottomLeftYPosition;
 
-    @JsonProperty("top-right-x-position")
+    @JsonProperty("top-right-X-position")
     private Integer topRightXPosition;
 
-    @JsonProperty("top-right-y-position")
+    @JsonProperty("top-right-Y-position")
     private Integer topRightYPosition;
 
 }

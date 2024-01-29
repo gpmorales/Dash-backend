@@ -18,15 +18,21 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+
+    // TODO
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()
             .authorizeRequests()
-            .antMatchers("/Dash/**").permitAll() // Public access
-            .antMatchers("/dashboard/**").authenticated() // Secured endpoint for oauth2 clients only
-            .antMatchers("/swagger-ui.html").authenticated() // TODO - remove
+            .antMatchers("/auth/**").permitAll() // Public access
+            .antMatchers("/swagger-ui.html").permitAll() // TODO - REMOVE IN THE FUTURE
+            .antMatchers("/my-dashboard/**").permitAll() // Secured endpoint for authenticated users only
+            //.antMatchers("/my-dashboard/**").authenticated() // Secured endpoint for authenticated users only
             .and()
-            .oauth2Login(oauth2login -> oauth2login.loginPage("/oauth2/authorization/api-client-oidc"))
+            .oauth2Login(oauth2login -> oauth2login.
+                    loginPage("/oauth2/authorization/dash-oidc-client"). // standard URL /oauth2/authorization/{client-name} which UPON HITTING STARTS THE OAUTH2.0 FLOW
+                    defaultSuccessUrl("/my-dashboard") // Where to redirect after successful authentication
+            )
             .oauth2Client(Customizer.withDefaults());
 
         return http.build();

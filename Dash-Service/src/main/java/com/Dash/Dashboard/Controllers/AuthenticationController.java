@@ -14,7 +14,7 @@ import javax.validation.Valid;
 
 
 @RestController
-@RequestMapping("Dash/auth")
+@RequestMapping("/auth")
 public class AuthenticationController {
 
 

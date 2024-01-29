@@ -1,23 +1,23 @@
 package com.Dash.ResourceServer.Services;
 
 import lombok.extern.slf4j.Slf4j;
+import com.amazonaws.util.IOUtils;
+import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.AmazonS3;
+
 import com.Dash.ResourceServer.Models.Widget;
 import com.Dash.ResourceServer.Models.Project;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.time.LocalDate;
+import java.io.*;
 import java.util.*;
+
 
 
 @Slf4j
@@ -27,6 +27,8 @@ public class ResourceService {
     // TODO CONNECT TO S3
     @Value("${application.bucket}")
     private String bucket;
+
+    private final static String S3URL = "https://dash-analytics-test.s3.amazonaws.com/";
 
     private final AmazonS3 amazonS3Client;
 
@@ -39,83 +41,87 @@ public class ResourceService {
     // TODO
     // Connect to S3 and query for all projects belonging to this userDetails
     public List<Project> getProjectsBelongingTo(String userId) {
-        /*
-        return List.of(
-                new Project("3433", "Lurie's Studies Analytics Display", LocalDate.now().minusDays(4), LocalDate.now().minusDays(2), "csv.link", "pr description", List.of(new Widget("plot 1", 10, 10, 50, 50), new Widget("plot 2", 60, 10, 100, 50))),
-                new Project("7890", "Kevin's Math 361 Project", LocalDate.now().minusDays(5), LocalDate.now().minusDays(1), "another.csv.link", "pr description", List.of(new Widget("graph 1", 20, 20, 60, 60), new Widget("graph 2", 70, 20, 110, 60), new Widget("graph 3", 90, 20, 210, 90)))
-        );
-        */
-        return new ArrayList<>();
+
+        ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request().withBucketName(bucket).withPrefix(userId + "/");
+
+        ListObjectsV2Result listObjectsResponse = amazonS3Client.listObjectsV2(listObjectsRequest);
+
+        List<String> projectLinks = listObjectsResponse.getObjectSummaries().stream()
+                .map(S3ObjectSummary::getKey)
+                .filter(key -> key.endsWith(".json"))
+                .toList();
+
+
+        final List<Project> userProjects = new ArrayList<>();
+
+        for (String projectLocation : projectLinks) {
+            S3ObjectInputStream projectJson = amazonS3Client.getObject(bucket, projectLocation).getObjectContent();
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                final byte[] jsonData = IOUtils.toByteArray(projectJson);
+                userProjects.add(objectMapper.readValue(jsonData, Project.class));
+            } catch (IOException e) {
+                log.warn(e.getMessage());
+            }
+        }
+
+        return userProjects;
     }
 
 
 
-    // TODO
-    public Optional<Project> getProject(String userId, String projectId) {
-        /*
-            return Optional.of(new Project("3433", "Lurie's Studies Analytics Display", LocalDate.now().minusDays(4), LocalDate.now().minusDays(2), "csv.link", "pr description",
-                    List.of(new Widget("plot 1", 10, 10, 50, 50), new Widget("plot 2", 60, 10, 100, 50))
-            ));
-        */
-        return Optional.empty();
-    }
+    public HttpStatus generateProject(Project project, byte[] csvFile) {
 
-
-    // TODO
-    public HttpStatus generateProject(String userId, Project project, MultipartFile csvSheet) {
-
-
-        // TODO *************** Upload CSV SHEET
-
-        Optional<File> csvData = convertMultiPartFile(csvSheet);
-
-        if (csvData.isEmpty()) {
+        if (csvFile.length == 0) {
             return HttpStatus.BAD_REQUEST;
         }
 
-        final String csvFileLocation = userId.concat("/").concat(project.getCsvSheetLink());
+        try (final InputStream csvStream = new ByteArrayInputStream(csvFile)) {
 
-        final PutObjectResult csvSheetUploadResult = amazonS3Client.putObject(new PutObjectRequest(bucket, csvFileLocation, csvData.get()));
+            // Upload CSV
+            final String csvFileLocation = project.getCsvSheetLink();
 
+            final ObjectMetadata csvMetadata = new ObjectMetadata();
+            csvMetadata.setContentLength(csvFile.length);
 
-        // TODO *************** Upload Json
-
-        Optional<File> projectJson = convertProjectToJson(project);
-
-        if (projectJson.isEmpty()) {
-            return HttpStatus.BAD_REQUEST;
-        }
-
-        final String jsonFileLocation = csvFileLocation.replace(".csv", ".json");
-
-        PutObjectResult jsonUploadResult = amazonS3Client.putObject(new PutObjectRequest(bucket, jsonFileLocation, projectJson.get()));
+            amazonS3Client.putObject(new PutObjectRequest(bucket, csvFileLocation, csvStream, csvMetadata));
 
 
-        // TODO
-        log.warn("CSV PERSISTENCE RESULT " + csvSheetUploadResult.getMetadata().getLastModified());
-        log.warn("JSON PERSISTENCE RESULT " + jsonUploadResult.getMetadata().getLastModified());
+            // Upload Json
+            project.setWidgets(List.of(new Widget("plot 1", 10, 10, 50, 50), new Widget("plot 2", 60, 10, 100, 50)));
 
-        return HttpStatus.CREATED;
-    }
+            String jsonString = (new ObjectMapper()).writeValueAsString(project);
+            final InputStream jsonStream = new ByteArrayInputStream(jsonString.getBytes());
+            final ObjectMetadata jsonMetadata = new ObjectMetadata();
+            jsonMetadata.setContentLength(jsonString.getBytes().length);
 
+            if (jsonStream.available() == 0) {
+                return HttpStatus.BAD_REQUEST;
+            }
 
+            final String jsonFileLocation = csvFileLocation.replace(".csv", ".json");
 
-    private Optional<File> convertMultiPartFile(MultipartFile data) {
-        final File convertedFile = new File(data.getOriginalFilename());
+            amazonS3Client.putObject(new PutObjectRequest(bucket, jsonFileLocation, jsonStream, jsonMetadata));
 
-        try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
-            fos.write(data.getBytes());
+            return HttpStatus.CREATED;
+
         } catch (IOException e) {
-            log.error(e.getMessage());
-            return Optional.empty();
+            log.warn(e.getMessage());
+            return HttpStatus.BAD_REQUEST;
         }
 
-        return Optional.of(convertedFile);
     }
 
-    private Optional<File> convertProjectToJson(Project json) {
-        return Optional.of(new File("as"));
-    }
 
+
+
+    /*
+    // TODO
+    public Project getProject(String projectLink) {
+        return new Project("3433", "Lurie's Studies Analytics Display", "csv.link", "pr description",
+                List.of(new Widget("plot 1", 10, 10, 50, 50), new Widget("plot 2", 60, 10, 100, 50))
+        );
+    }
+    */
 
 }
