@@ -46,7 +46,7 @@ public class ResourceService {
 
         ListObjectsV2Result listObjectsResponse = amazonS3Client.listObjectsV2(listObjectsRequest);
 
-        List<String> projectLinks = listObjectsResponse.getObjectSummaries().stream()
+        List<String> projectConfigs = listObjectsResponse.getObjectSummaries().stream()
                 .map(S3ObjectSummary::getKey)
                 .filter(key -> key.endsWith(".json"))
                 .toList();
@@ -54,12 +54,17 @@ public class ResourceService {
 
         final List<Project> userProjects = new ArrayList<>();
 
-        for (String projectLocation : projectLinks) {
-            S3ObjectInputStream projectJson = amazonS3Client.getObject(bucket, projectLocation).getObjectContent();
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        for (String projectConfigLink : projectConfigs) {
+
+            S3Object projectConfigObj = amazonS3Client.getObject(bucket, projectConfigLink);
+
             try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                final byte[] jsonData = IOUtils.toByteArray(projectJson);
-                userProjects.add(objectMapper.readValue(jsonData, Project.class));
+                final byte[] jsonData = IOUtils.toByteArray(projectConfigObj.getObjectContent());
+                final Project projectConfig = objectMapper.readValue(jsonData, Project.class);
+                projectConfig.setLastModified(projectConfigObj.getObjectMetadata().getLastModified().toString());
+                userProjects.add(projectConfig);
             } catch (IOException e) {
                 log.warn(e.getMessage());
             }

@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -30,6 +31,9 @@ public class Project {
 
     @JsonProperty("projectDescription")
     private String projectDescription;
+
+    @JsonProperty("lastModified")
+    private String lastModified;
 
     @JsonProperty("widgets")
     private List<Widget> widgets;

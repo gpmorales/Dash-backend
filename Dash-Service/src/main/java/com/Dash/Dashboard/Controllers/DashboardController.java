@@ -31,14 +31,14 @@ public class DashboardController {
 
 
     // Client -> injected with authorization details to make calls to my Resource server
-    // oidcUser -> injected after authentication with OAuth2 server (AuthenticationPrincipal)
+    // oidcUser -> injected after authentication with OAuth2 server (AuthenticationPrincipal) (OPTIONAL)
 
 
     // TODO
     /** On Startup, provide all the user's projects on their home dashboard */
     @GetMapping
     public ResponseEntity<List<Project>> loadDashboard(//@RegisteredOAuth2AuthorizedClient("resource-access-client")
-                                                         //OAuth2AuthorizedClient authorizedClient) {
+                                                       //OAuth2AuthorizedClient authorizedClient) {
     ){
         try {
 

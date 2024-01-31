@@ -38,6 +38,10 @@ public class Project {
     private String projectDescription;
 
     @NotNull
+    @JsonProperty("lastModified")
+    private String lastModified;
+
+    @NotNull
     @JsonProperty("widgets")
     private List<Widget> widgets;
 

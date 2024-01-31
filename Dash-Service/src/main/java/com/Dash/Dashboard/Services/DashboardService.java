@@ -30,7 +30,7 @@ import static org.springframework.security.oauth2.client.web.reactive.function.c
 @Slf4j
 public class DashboardService {
 
-    private final static String S3URL = "https://dash-analytics-test.s3.amazonaws.com/";
+    private final static String S3URL = "s3://dash-analytics-test/";
 
     private final WebClient webClient;
 
@@ -93,11 +93,11 @@ public class DashboardService {
                 csvSheetLink(projectKey.concat("/").concat(projectId.concat(".csv"))).
                 projectDescription(projectDescription).widgets(new ArrayList<>()).build();
 
-        final String createProjectUrl = UriComponentsBuilder.fromUriString("http://127.0.0.1:8081/resources/api/create-project")
-                .buildAndExpand(userId).toUriString();
+
+        final String createProjectUrl = UriComponentsBuilder.fromUriString("http://127.0.0.1:8081/resources/api/create-project").buildAndExpand(userId).toUriString();
 
 
-        // TODO - make call to upload CSV sheet + create Project JSON (create project folder + project json file)
+        // Make HTTP request to upload CSV sheet + create Project JSON (create project folder + project json file)
         final HttpStatus responseStatus = this.webClient.post()
                 .uri(createProjectUrl)
                 .body(BodyInserters.fromMultipartData("project", project).with("data", csvFile.getBytes()))
@@ -107,10 +107,10 @@ public class DashboardService {
                 .block();
 
 
-        final String baseProjectLink = S3URL.concat(projectKey.concat("."));
+        final String projectConfigLink = S3URL.concat(projectKey.concat("/").concat(projectId.concat(".json")));
 
         if (responseStatus != null && responseStatus.equals(HttpStatus.CREATED)) {
-            return Optional.of(baseProjectLink.concat("/").concat(projectId.concat(".")));
+            return Optional.of(projectConfigLink);
         }
 
         return Optional.empty();
@@ -118,9 +118,11 @@ public class DashboardService {
 
 
 
+
     private boolean userHasEnoughCredits(String userId) {
         return !userId.isEmpty();
     }
+
 
 
 
