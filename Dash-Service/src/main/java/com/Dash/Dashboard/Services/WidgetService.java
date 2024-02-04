@@ -45,7 +45,6 @@ public class WidgetService {
 
         //responseObject.subscribe(() -> {});
 
-
         return Optional.empty();
     }
 

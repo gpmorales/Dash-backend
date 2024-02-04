@@ -20,7 +20,7 @@ public class WidgetController {
     }
 
 
-    // TODO - use webFlux client for ASYNC CALLS
+    // TODO - use webFlux client for ASYNC CALLS || MAKE FRONTEND SEND ME 2 JSON OBJECTS!
 
     /** While working on a project, allow user to add new Widget */
     @PostMapping("/{projectLink}")

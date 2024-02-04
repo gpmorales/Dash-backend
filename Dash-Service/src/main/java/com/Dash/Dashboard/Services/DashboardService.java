@@ -1,8 +1,8 @@
 package com.Dash.Dashboard.Services;
 
 import com.Dash.Dashboard.Models.Project;
-
 import com.Dash.Dashboard.Models.Widget;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
@@ -45,7 +45,7 @@ public class DashboardService {
      * @return
      * @throws WebClientResponseException
      */
-    public Optional<List<Project>> loadAllProjects(){//OAuth2AuthorizedClient client) throws WebClientResponseException {
+    public Optional<List<Project>> loadAllProjects(OAuth2AuthorizedClient client) throws WebClientResponseException {
 
         // Extract username from authorized client
         final String userId = "user123@gmail.com"; //client.getPrincipalName();
@@ -75,80 +75,45 @@ public class DashboardService {
      * @throws WebClientException
      * @throws IOException
      */
-    public Optional<String> createProject(String projectName, String projectDescription, MultipartFile csvFile) throws WebClientException, IOException {
-                                             // OAuth2AuthorizedClient client) throws WebClientResponseException {
+    public Optional<Project> createProject(String projectName, String projectDescription, MultipartFile csvFile//,
+                                          /*OAuth2AuthorizedClient client*/) throws WebClientResponseException, IOException {
 
         final String userId = "user123@gmail.com"; //client.getPrincipalName();
 
         // Check if User has enough credits to create new project
         if (!userHasEnoughCredits(userId)) {
-            return Optional.of("");
+            return Optional.empty();
         }
 
         final String projectId = UUID.randomUUID().toString();
 
         final String projectKey = userId.concat("/").concat("project-").concat(projectId);
 
-        final Project project = Project.builder().projectId(projectId).projectName(projectName).
+        final Project templateProject = Project.builder().projectId(projectId).projectName(projectName).
                 csvSheetLink(projectKey.concat("/").concat(projectId.concat(".csv"))).
                 projectDescription(projectDescription).widgets(new ArrayList<>()).build();
 
 
-        final String createProjectUrl = UriComponentsBuilder.fromUriString("http://127.0.0.1:8081/resources/api/create-project").buildAndExpand(userId).toUriString();
+        final String createProjectUrl = UriComponentsBuilder.fromUriString("http://127.0.0.1:8081/resources/api/generate-project").buildAndExpand(userId).toUriString();
 
 
         // Make HTTP request to upload CSV sheet + create Project JSON (create project folder + project json file)
-        final HttpStatus responseStatus = this.webClient.post()
+        return this.webClient.post()
                 .uri(createProjectUrl)
-                .body(BodyInserters.fromMultipartData("project", project).with("data", csvFile.getBytes()))
+                .body(BodyInserters.fromMultipartData("template-project", templateProject).
+                        with("csv-data", csvFile.getBytes()))
                 //.attributes(oauth2AuthorizedClient(client))
                 .retrieve()
-                .bodyToMono(HttpStatus.class)
+                .bodyToMono(new ParameterizedTypeReference<Optional<Project>>() {})
                 .block();
-
-
-        final String projectConfigLink = S3URL.concat(projectKey.concat("/").concat(projectId.concat(".json")));
-
-        if (responseStatus != null && responseStatus.equals(HttpStatus.CREATED)) {
-            return Optional.of(projectConfigLink);
-        }
-
-        return Optional.empty();
     }
 
 
 
 
-    private boolean userHasEnoughCredits(String userId) {
+    public boolean userHasEnoughCredits(String userId) {
         return !userId.isEmpty();
     }
-
-
-
-
-
-
-    /**
-     *
-     * @param csvDataLink
-     * @param client
-     * @throws WebClientResponseException
-    public Optional<Project> getProject(String csvDataLink, OAuth2AuthorizedClient client) throws WebClientResponseException {
-
-        // Encode url with username
-        final String resourceUrl = UriComponentsBuilder.fromUriString("http://127.0.0.1:8081/resources/api/load/{csvDataLink}")
-                .buildAndExpand(csvDataLink).toUriString();
-
-        // Call Resource Server
-        final Project project = this.webClient.get().uri(resourceUrl)
-                .attributes(oauth2AuthorizedClient(client))
-                .retrieve()
-                .bodyToMono(Project.class)
-                .block();
-
-        return Optional.ofNullable(project);
-    }
-     */
 
 
 }

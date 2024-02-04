@@ -32,12 +32,11 @@ public class Project {
     @JsonProperty("csvSheetLink")
     private String csvSheetLink;
 
-    @NotNull
     @NotEmpty
+    @NotNull
     @JsonProperty("projectDescription")
     private String projectDescription;
 
-    @NotNull
     @JsonProperty("lastModified")
     private String lastModified;
 

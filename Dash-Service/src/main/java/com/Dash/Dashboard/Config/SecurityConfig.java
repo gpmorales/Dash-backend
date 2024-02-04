@@ -18,7 +18,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-
     // TODO
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
