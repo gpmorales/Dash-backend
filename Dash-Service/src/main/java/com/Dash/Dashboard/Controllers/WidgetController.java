@@ -2,6 +2,7 @@ package com.Dash.Dashboard.Controllers;
 
 import com.Dash.Dashboard.Models.Widget;
 import com.Dash.Dashboard.Services.WidgetService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,9 +10,13 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.NotEmpty;
 import java.util.Optional;
 
+
+@Slf4j
 @RestController
 @RequestMapping("/my-dashboard/workspace")
 public class WidgetController {
+
+    private final String foo = "hello";
 
     private final WidgetService widgetService;
 
@@ -23,9 +28,9 @@ public class WidgetController {
     // TODO - use webFlux client for ASYNC CALLS || MAKE FRONTEND SEND ME 2 JSON OBJECTS!
 
     /** While working on a project, allow user to add new Widget */
-    @PostMapping("/{projectLink}")
-    public ResponseEntity<Object> addWidget(@NotEmpty @PathVariable String projectLink,
-                                            @RequestBody Widget widget) {
+    @PostMapping(value = "/add-widget")
+    public ResponseEntity<Object> addWidget(@RequestPart("project-config-link") String projectLink,
+                                            @RequestPart("widget") Widget widget) {
         try {
 
             final Optional<String> projectJsonLink = sanitize(projectLink);
@@ -40,20 +45,22 @@ public class WidgetController {
 
             }
 
-            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(HttpStatus.CREATED);
 
         } catch (Exception e) {
-            return null;
+            log.error(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
 
 
-    // TODO
+    // TODO --> TO UPDATE PASS IN NEW FIELDS OR UPDATED JSON OBJ
     /** While working on a project, allow user to update widget */
-    @PutMapping("/{projectLink}")
-    public ResponseEntity<Object> updateWidget(@NotEmpty @PathVariable String projectLink,
-                                              @RequestBody Widget widget) {
+    @PutMapping("/{widget-id}")
+    public ResponseEntity<Object> updateWidget(@PathVariable("widget-id") String widgetId,
+                                               @RequestPart("project-config-link") String projectLink,
+                                               @RequestPart("widget") Widget widget) {
         try {
 
             final Optional<String> projectJsonLink = sanitize(projectLink);
@@ -62,19 +69,21 @@ public class WidgetController {
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
 
-            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(HttpStatus.OK);
 
         } catch (Exception e) {
-            return null;
+            log.error(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
 
 
-    // TODO
+    // TODO  ---> FIGURE OUT LOGIC
     /** While working on a project, allow user to delete a Widget */
-    @DeleteMapping("/{projectLink}")
-    public ResponseEntity<Object> deleteWidget(@NotEmpty @PathVariable String projectLink) {
+    @DeleteMapping("/{widget-id}")
+    public ResponseEntity<Object> deleteWidget(@PathVariable("widget-id") String widgetId,
+                                               @RequestPart("project-config-link") String projectLink) {
         try {
 
             final Optional<String> projectJsonLink = sanitize(projectLink);
@@ -86,9 +95,11 @@ public class WidgetController {
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
 
         } catch (Exception e) {
-            return null;
+            log.error(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 
 
@@ -98,7 +109,7 @@ public class WidgetController {
         if (link.endsWith(".csv")) {
             return Optional.of(link.replace(".csv", ".json"));
         } else if (link.endsWith(".json")) {
-            return Optional.of(link.concat(".json"));
+            return Optional.of(link);
         }
         return Optional.empty();
     }
