@@ -16,8 +16,6 @@ import java.util.Optional;
 @RequestMapping("/my-dashboard/workspace")
 public class WidgetController {
 
-    private final String foo = "hello";
-
     private final WidgetService widgetService;
 
     WidgetController(WidgetService widgetService) {
