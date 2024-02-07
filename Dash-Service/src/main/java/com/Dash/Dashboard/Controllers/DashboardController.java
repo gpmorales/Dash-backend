@@ -87,7 +87,6 @@ public class DashboardController {
                 return new ResponseEntity<>(generatedProjectConfig.get(), HttpStatus.OK);
             }
 
-            final String foo = "hello";
 
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 
