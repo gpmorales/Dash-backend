@@ -27,7 +27,12 @@ public class AuthenticationController {
     }
 
 
-    // TODO -> Request an activation key
+
+    /**
+     *
+     * @param userEmail
+     * @return
+     */
     @GetMapping("/request-access")
     public ResponseEntity<String> getAccess(@RequestParam("email") String userEmail) {
         try {

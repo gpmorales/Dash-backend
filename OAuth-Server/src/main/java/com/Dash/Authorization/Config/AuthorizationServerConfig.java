@@ -6,6 +6,7 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+
 import java.util.UUID;
 
 
@@ -46,7 +48,7 @@ public class AuthorizationServerConfig {
 
     @Bean
     public RegisteredClientRepository registeredClientRepository() {
-        RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
+        RegisteredClient customClient = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("Dash-client")
                 .clientSecret(passwordEncoder.encode("secret"))
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
@@ -57,10 +59,10 @@ public class AuthorizationServerConfig {
                 .redirectUri("http://127.0.0.1:8080/authorized")
                 .scope(OidcScopes.OPENID)
                 .scope("api.read")
-                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
+                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(false).build())
                 .build();
 
-        return new InMemoryRegisteredClientRepository(registeredClient);
+        return new InMemoryRegisteredClientRepository(customClient);
     }
 
 

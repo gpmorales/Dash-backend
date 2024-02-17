@@ -14,7 +14,7 @@ import java.util.Date;
 @Document(collection = "VerificationTokens")
 public class VerificationToken {
 
-    private static final int EXPIRATION_TIME = 1;
+    private static final int EXPIRATION_TIME = 3;
 
     @Id
     private String id;

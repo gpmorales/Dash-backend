@@ -6,6 +6,7 @@ import com.Dash.Dashboard.Models.Widget;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -41,14 +42,14 @@ public class DashboardService {
 
 
     /**
-     *
+     * @param client
+     * @param userId
      * @return
      * @throws WebClientResponseException
      */
-    public Optional<List<Project>> loadAllProjects(OAuth2AuthorizedClient client) throws WebClientResponseException {
+    public Optional<List<Project>> loadAllProjects(OAuth2AuthorizedClient client, String userId) throws WebClientResponseException {
 
-        // Extract username from authorized client
-        final String userId = "user123@gmail.com"; //client.getPrincipalName();
+        userId = "user123@gmail.com"; //TODO DUMMY USER
 
         // Encode url with username
         final String resourceUrl = UriComponentsBuilder.fromUriString("http://127.0.0.1:8081/resources/api/all-projects/{userId}")
@@ -56,7 +57,7 @@ public class DashboardService {
 
         // Call Resource Server
         final List<Project> userProjects = this.webClient.get().uri(resourceUrl)
-                                        //.attributes(oauth2AuthorizedClient(client))
+                                        .attributes(oauth2AuthorizedClient(client))
                                         .retrieve()
                                         .bodyToMono(new ParameterizedTypeReference<List<Project>>() {})
                                         .block();
@@ -67,7 +68,6 @@ public class DashboardService {
 
 
     /**
-     *
      * @param projectName
      * @param projectDescription
      * @param csvFile
@@ -89,19 +89,20 @@ public class DashboardService {
 
         final String projectKey = userId.concat("/").concat("project-").concat(projectId);
 
-        final Project templateProject = Project.builder().projectId(projectId).projectName(projectName).
-                csvSheetLink(projectKey.concat("/").concat(projectId.concat(".csv"))).
-                projectDescription(projectDescription).widgets(new ArrayList<>()).build();
+        final Project templateProject = Project.builder().projectId(projectId).projectName(projectName)
+            .csvSheetLink(projectKey.concat("/").concat(projectId.concat(".csv")))
+            .projectDescription(projectDescription).widgets(new ArrayList<>()).build();
 
 
-        final String createProjectUrl = UriComponentsBuilder.fromUriString("http://127.0.0.1:8081/resources/api/generate-project").buildAndExpand(userId).toUriString();
+        final String createProjectUrl = UriComponentsBuilder.fromUriString("http://127.0.0.1:8081/resources/api/generate-project")
+                .buildAndExpand(userId).toUriString();
 
 
         // Make HTTP request to upload CSV sheet + create Project JSON (create project folder + project json file)
         return this.webClient.post()
                 .uri(createProjectUrl)
                 .body(BodyInserters.fromMultipartData("template-project", templateProject).
-                        with("csv-data", csvFile.getBytes()))
+                with("csv-data", csvFile.getBytes()))
                 //.attributes(oauth2AuthorizedClient(client))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<Optional<Project>>() {})
@@ -112,8 +113,12 @@ public class DashboardService {
 
 
     public boolean userHasEnoughCredits(String userId) {
-        return !userId.isEmpty();
+        return userId.length() > 0;
     }
 
+
+    public static boolean isPresent(String obj) {
+        return obj != null;
+    }
 
 }

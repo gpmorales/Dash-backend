@@ -2,8 +2,10 @@ server:
   port: 8081
 
 spring:
+
   application:
     name: Resource-Server
+
   security:
     oauth2:
       resource-server:
@@ -15,6 +17,7 @@ application:
   bucket:
     dash-analytics-test
 
+
 cloud:
   aws:
     credentials:
@@ -24,7 +27,6 @@ cloud:
       static: us-east-2
     stack:
       auto: false
-
 
 
 eureka:

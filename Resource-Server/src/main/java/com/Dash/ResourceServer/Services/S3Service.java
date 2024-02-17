@@ -89,9 +89,6 @@ public class S3Service {
 
             amazonS3Client.putObject(new PutObjectRequest(bucket, csvFileLocation, csvStream, csvMetadata));
 
-            // TODO - REMOVE - dummy widgets -
-            projectConfig.setWidgets(List.of(new Widget("plot 1", 10, 10, 50, 50), new Widget("plot 2", 60, 10, 100, 50)));
-
             // TODO - Upload Json  (start with Json String)
             String jsonString = (new ObjectMapper()).writeValueAsString(projectConfig);
             final InputStream jsonStream = new ByteArrayInputStream(jsonString.getBytes());

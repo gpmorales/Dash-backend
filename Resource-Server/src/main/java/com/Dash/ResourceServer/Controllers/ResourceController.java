@@ -1,19 +1,16 @@
 package com.Dash.ResourceServer.Controllers;
 
-import com.Dash.ResourceServer.Services.GPTService;
+import com.Dash.ResourceServer.Models.Widget;
+import com.Dash.ResourceServer.Models.Project;
 import com.Dash.ResourceServer.Services.S3Service;
+import com.Dash.ResourceServer.Services.GPTService;
+
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.extern.slf4j.Slf4j;
 
-import com.Dash.ResourceServer.Models.Project;
-import com.Dash.ResourceServer.Models.Widget;
-import org.springframework.http.MediaType;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.validation.BindingResult;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.validation.Valid;
 import java.util.*;
 
 
@@ -34,7 +31,11 @@ public class ResourceController {
 
 
     // TODO
-    /** Will grab the file from this path user/{userid}/user.json, which contains the projects of that user and corresponding links/details in JSON format */
+    /**
+     * Retrieves the JSON configuration file located at user/project-{userId}/{userId}.json, which encapsulates the dashboard & widgets configuration for a specified project, including pertinent links and information in JSON format
+     * @param userId
+     * @return
+     */
     @GetMapping(value = "/all-projects/{userId}")
     public List<Project> getUserProjects(@PathVariable String userId) {
         try {
@@ -50,11 +51,15 @@ public class ResourceController {
 
 
     // TODO
-    /** Create a new project (dashboard with widgets) given a project name, a CSV file and */
+    /**
+     * Generates a new project directory with a CSV sheet file and a generated JSON config file that includes the dashboard & widgets setup, and relevant links, derived from the template Project config
+     * @param templateProject
+     * @param csvByteArray
+     * @return
+     */
     @PostMapping(value = "/generate-project", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public Optional<Project> addProject(@RequestPart("template-project") Project templateProject,
-                                        @RequestPart("csv-data") byte[] csvByteArray,
-                                        BindingResult bindingResult) {
+                                        @RequestPart("csv-data") byte[] csvByteArray) {
         try {
 
             // TODO Create Config with GPT API
@@ -70,9 +75,7 @@ public class ResourceController {
                 return Optional.of(templateProject);
             }
 
-            log.warn("SHOULD RUN FIRST");
             resourceService.uploadToS3(generatedProjectConfig.get(), csvByteArray);
-            log.warn("SHOULD RUN SECOND");
 
             return generatedProjectConfig;
 

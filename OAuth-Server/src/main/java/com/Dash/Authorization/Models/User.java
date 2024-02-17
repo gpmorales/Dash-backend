@@ -85,10 +85,4 @@ public class User implements UserDetails {
         return enabled;
     }
 
-    // @Data creates the getters and setters for this class's defined attributes
-    // and a default no-arg constructor
-
-    // @Builder creates a build pattern class that allows you
-    // to create complex objects by chaining the fields where you define the attributes
-    // ex : Person me = Person.builder().age(12).name("bob").phone(1234) ... etc
 }

@@ -32,7 +32,7 @@ spring:
           # Each registration is a set of credentials and configuration specific to a certain role or use case of your application.
 
           # "api-client-oidc" is a custom name for a specific OAuth 2.0 client registration within your application.
-          # scope: openid: This line indicates that your application is requesting the "openid" scope.
+          # Scopes: openid: This line indicates that your application is requesting the "openid" scope.
           # In OpenID Connect, the "openid" scope is used for AUTHENTICATION and includes the ability to obtain identity information about the user.
 
           # OIDC protocol for user authentication
@@ -61,12 +61,17 @@ spring:
             client-name: resource-access-client
 
 
-        # These configurations help your Dashboard microservice establish secure connections with the
+          google:
+            client-id: 99003468096-edlth0mmn4urvt70c0nvu85bgd1v12lq.apps.googleusercontent.com
+            client-secret: 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
+
+        # These configurations help the Dashboard microservice establish secure connections with the
         # OAuth 2.0 Authorization Server and potentially other resource servers, allowing it to authenticate users and access protected resources.
 
         provider:
           spring:
             issuer-uri: http://auth-server:9000
+
 
 
 eureka:

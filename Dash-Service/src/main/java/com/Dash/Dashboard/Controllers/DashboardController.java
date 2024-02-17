@@ -4,25 +4,27 @@ import com.Dash.Dashboard.Models.Project;
 import com.Dash.Dashboard.Services.DashboardService;
 
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
+import static com.Dash.Dashboard.Services.DashboardService.isPresent;
 
 
 @Slf4j
 @RestController
-@RequestMapping("/my-dashboard")
+@RequestMapping("my-dashboard")
 public class DashboardController {
 
     final private DashboardService dashboardService;
@@ -36,17 +38,26 @@ public class DashboardController {
     // Client -> injected with authorization details to make calls to my Resource server
     // oidcUser -> injected after authentication with OAuth2 server (AuthenticationPrincipal) (OPTIONAL)
 
-
     // TODO
     /** On Startup, provide all the user's projects on their home dashboard */
     @GetMapping
-    public ResponseEntity<List<Project>> loadDashboard(){//@RegisteredOAuth2AuthorizedClient("resource-access-client")
-                                                       //OAuth2AuthorizedClient authorizedClientConfig) { // TODO - UNCOMMENT
+    public ResponseEntity<List<Project>> loadDashboardForGoogleClient(@RegisteredOAuth2AuthorizedClient("resource-access-client")
+                                                                      OAuth2AuthorizedClient authorizedClient,
+                                                                      @AuthenticationPrincipal OidcUser oidcUser) {
         try {
 
-            //log.warn(authorizedClientConfig.getPrincipalName());
+            final Optional<List<Project>> projectList;
 
-            final Optional<List<Project>> projectList = dashboardService.loadAllProjects(null);//authorizedClientConfig);
+            if (isPresent(oidcUser.getEmail())) {
+                // TODO publish event to create user OR ensure user email doesnt alr exist in our IN-HOUSE-USER DB
+                log.warn("GOOGLE");
+                log.warn(oidcUser.getEmail());
+                projectList = dashboardService.loadAllProjects(authorizedClient, oidcUser.getEmail());
+            } else {
+                log.warn("DASH");
+                log.warn(authorizedClient.getPrincipalName());
+                projectList = dashboardService.loadAllProjects(authorizedClient, authorizedClient.getPrincipalName());
+            }
 
             if (projectList.isPresent() && !projectList.get().isEmpty()) {
                 return ResponseEntity.ok().header("Content-Type", "application/json").
@@ -63,7 +74,7 @@ public class DashboardController {
 
 
 
-    // TODO
+    // TODO ---> HOW DO WE HAVE CLIENT INJECTED AUTO? *****************
     /** Client creates a new project, args include name of project, description, and some auto-gen fields */
     @PostMapping(value = "/create-project", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<Project> createProject(@RequestPart("project-name") String projectName,
@@ -72,8 +83,10 @@ public class DashboardController {
                                                  //@RegisteredOAuth2AuthorizedClient("resource-access-client")
                                                  //OAuth2AuthorizedClient authorizedClientConfig) { // TODO - UNCOMMENT
         try {
-
             //log.warn(authorizedClient.getPrincipalName());
+
+            // TODO
+            if (true) return new ResponseEntity<>(new Project(), HttpStatus.OK);
 
             // Ensure request can be made by user
             if (!dashboardService.userHasEnoughCredits("userId")) {
