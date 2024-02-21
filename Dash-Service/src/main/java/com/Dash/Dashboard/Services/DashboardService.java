@@ -1,28 +1,22 @@
 package com.Dash.Dashboard.Services;
 
 import com.Dash.Dashboard.Models.Project;
-import com.Dash.Dashboard.Models.Widget;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.UUID;
-import java.util.List;
-import java.util.Optional;
-import java.time.LocalDate;
+import java.util.*;
 
 import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient;
 

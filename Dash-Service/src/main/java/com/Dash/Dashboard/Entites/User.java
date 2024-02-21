@@ -33,6 +33,7 @@ public class User implements UserDetails {
 
     private String lastName;
 
+
     @NotNull
     @NotEmpty
     @Indexed(unique = true)

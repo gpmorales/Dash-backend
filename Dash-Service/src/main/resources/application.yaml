@@ -55,7 +55,7 @@ spring:
             provider: spring
             client-id: Dash-client
             client-secret: secret
-            authorization-grant-type: authorization_code
+            authorization-grant-type: client_credentials
             redirect-uri: "http://127.0.0.1:8080/authorized"
             scope: api.read
             client-name: resource-access-client
@@ -64,6 +64,10 @@ spring:
           google:
             client-id: 99003468096-edlth0mmn4urvt70c0nvu85bgd1v12lq.apps.googleusercontent.com
             client-secret: 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
+
+          github:
+            client-id: 9469026e7fe5816fb5e4
+            client-secret: dc6a98aac4590417c1c91f8c59454e5c0be907a3
 
         # These configurations help the Dashboard microservice establish secure connections with the
         # OAuth 2.0 Authorization Server and potentially other resource servers, allowing it to authenticate users and access protected resources.

@@ -5,6 +5,12 @@ import com.Dash.Dashboard.Services.DashboardService;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpStatus;
@@ -24,20 +30,26 @@ import static com.Dash.Dashboard.Services.DashboardService.isPresent;
 
 @Slf4j
 @RestController
-@RequestMapping("my-dashboard")
+@RequestMapping("/my-dashboard")
+//@CrossOrigin
 public class DashboardController {
 
     final private DashboardService dashboardService;
 
+    final private ApplicationEventPublisher loginEventPublisher;
+
     @Autowired
-    DashboardController(DashboardService dashboardService) {
+    DashboardController(DashboardService dashboardService, ApplicationEventPublisher loginEventPublisher) {
         this.dashboardService = dashboardService;
+        this.loginEventPublisher = loginEventPublisher;
     }
 
 
     // Client -> injected with authorization details to make calls to my Resource server
     // oidcUser -> injected after authentication with OAuth2 server (AuthenticationPrincipal) (OPTIONAL)
 
+    @Autowired
+    private OAuth2AuthorizedClientManager authorizedClientManager;
     // TODO
     /** On Startup, provide all the user's projects on their home dashboard */
     @GetMapping
@@ -46,16 +58,36 @@ public class DashboardController {
                                                                       @AuthenticationPrincipal OidcUser oidcUser) {
         try {
 
+            /*
+            OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest.withClientRegistrationId("resource-access-client")
+                    .principal(new AnonymousAuthenticationToken("key","resource-service-account", AuthorityUtils.createAuthorityList("ROLE_USER")))
+                    .build();
+
+            OAuth2AuthorizedClient resourceClient = this.authorizedClientManager.authorize(authorizeRequest);
+            */
+
             final Optional<List<Project>> projectList;
 
-            if (isPresent(oidcUser.getEmail())) {
+            log.warn(authorizedClient.getAccessToken().getTokenValue());
+
+            if (oidcUser == null) {
                 // TODO publish event to create user OR ensure user email doesnt alr exist in our IN-HOUSE-USER DB
-                log.warn("GOOGLE");
+                log.warn("Github");
+                log.warn(authorizedClient.getClientRegistration().getScopes().toString());
+                projectList = dashboardService.loadAllProjects(authorizedClient, "");
+            }
+
+            else if (isPresent(oidcUser.getEmail())) {
+                // TODO publish event to create user OR ensure user email doesnt alr exist in our IN-HOUSE-USER DB
+                //loginEventPublisher.publishEvent(new OAuthUserLoginEvent(oidcUser));
+                log.warn("Google");
                 log.warn(oidcUser.getEmail());
+                log.warn(authorizedClient.getClientRegistration().getScopes().toString());
                 projectList = dashboardService.loadAllProjects(authorizedClient, oidcUser.getEmail());
             } else {
-                log.warn("DASH");
+                log.warn("DASH-OIDC");
                 log.warn(authorizedClient.getPrincipalName());
+                log.warn(authorizedClient.getClientRegistration().getScopes().toString());
                 projectList = dashboardService.loadAllProjects(authorizedClient, authorizedClient.getPrincipalName());
             }
 
@@ -71,6 +103,7 @@ public class DashboardController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 
 

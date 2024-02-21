@@ -50,6 +50,8 @@ public class AuthenticationService {
                 userDAO.findOne(new Query(Criteria.where("email").is(email)), User.class)
         );
 
+        User foundUser = user.get();
+
         if (user.isPresent() && user.get().isEnabled()) {
             return new ResponseEntity<>("An account with this email is already in use", HttpStatus.FORBIDDEN);
         }
