@@ -48,7 +48,6 @@ public class AuthorizationServerConfig {
 
     @Bean
     public RegisteredClientRepository registeredClientRepository() {
-
         RegisteredClient customClient = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("Dash-client")
                 .clientSecret(passwordEncoder.encode("secret"))

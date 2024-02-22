@@ -11,6 +11,9 @@ mongodb:
     uri: mongodb+srv://gpmoral:gMC20002@dev-cluster.ul8671y.mongodb.net/?retryWrites=true&w=majority
     database: VerificationTokenDb
 
+  tertiary:
+    uri: mongodb+srv://gpmoral:gMC20002@dev-cluster.ul8671y.mongodb.net/?retryWrites=true&w=majority
+    database: PasswordResetTokenDb
 
 spring:
 

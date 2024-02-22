@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import javax.validation.Valid;
 
 
@@ -17,9 +16,7 @@ import javax.validation.Valid;
 @RequestMapping("/auth")
 public class AuthenticationController {
 
-
     private final AuthenticationService authenticationService;
-
 
     @Autowired
     AuthenticationController(AuthenticationService authenticationService) {
@@ -27,13 +24,11 @@ public class AuthenticationController {
     }
 
 
-
     /**
-     *
      * @param userEmail
      * @return
      */
-    @GetMapping("/request-access")
+    @GetMapping(value = "/request-access")
     public ResponseEntity<String> getAccess(@RequestParam("email") String userEmail) {
         try {
 
@@ -49,8 +44,9 @@ public class AuthenticationController {
     }
 
 
+
     // TODO -> Once you have received an activation key, activate user account
-    @GetMapping("/activate-account")
+    @GetMapping(value = "/activate-account")
     public ResponseEntity<String> verifyRegistration(@RequestParam("key") String activationKey, @RequestParam("email") String userEmail) {
         try {
 
@@ -102,7 +98,6 @@ public class AuthenticationController {
             return new ResponseEntity<>("Something went wrong ... " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 
 
 }

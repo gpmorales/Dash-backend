@@ -45,13 +45,13 @@ public class SecurityConfig {
             .antMatchers("/my-dashboard/**").authenticated() // Secured endpoints for authenticated users only
             .and()
             .oauth2Login(oauth2login -> oauth2login
-                    //.loginPage("http://localhost:3000") // TODO - HOME PAGE -> GUCCI
+                    .loginPage("http://localhost:3000") // TODO - HOME PAGE -> GUCCI
                     .defaultSuccessUrl("/my-dashboard") // Where to redirect after successful authentication
             )
             .oauth2Client(Customizer.withDefaults())
             .sessionManagement(sessionManagement ->
                 sessionManagement
-                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS) // Create session if required
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Create session if required
                         .sessionFixation().newSession() // Protect against session fixation
             );
             /*

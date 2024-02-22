@@ -110,8 +110,7 @@ public class DashboardService {
         return userId.length() > 0;
     }
 
-
-    public static boolean isPresent(String obj) {
+    public static boolean isPresent(Object obj) {
         return obj != null;
     }
 

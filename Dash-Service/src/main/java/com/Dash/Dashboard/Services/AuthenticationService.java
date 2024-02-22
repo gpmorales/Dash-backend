@@ -19,6 +19,7 @@ import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.PostConstruct;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
@@ -31,14 +32,16 @@ public class AuthenticationService {
 
     // Dependency injections done by constructor (all private and final fields)
     private final MongoTemplate userDAO;
-    private final MongoTemplate verificationDAO;
+    private final MongoTemplate verificationTokenDAO;
     private final PasswordEncoder passwordEncoder;
 
 
     @Autowired
-    AuthenticationService(@Qualifier("userMongoTemplate") MongoTemplate userDAO, @Qualifier("verificationMongoTemplate") MongoTemplate verificationDAO, PasswordEncoder passwordEncoder) {
+    AuthenticationService(@Qualifier("userMongoTemplate") MongoTemplate userDAO,
+                          @Qualifier("verificationMongoTemplate") MongoTemplate verificationTokenDAO,
+                          PasswordEncoder passwordEncoder) {
         this.userDAO = userDAO;
-        this.verificationDAO = verificationDAO;
+        this.verificationTokenDAO = verificationTokenDAO;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -49,8 +52,6 @@ public class AuthenticationService {
         Optional<User> user = Optional.ofNullable(
                 userDAO.findOne(new Query(Criteria.where("email").is(email)), User.class)
         );
-
-        User foundUser = user.get();
 
         if (user.isPresent() && user.get().isEnabled()) {
             return new ResponseEntity<>("An account with this email is already in use", HttpStatus.FORBIDDEN);
@@ -65,13 +66,14 @@ public class AuthenticationService {
 
         // Otherwise this is a completely new user (email has not been used)
         final User tempUser = User.builder().email(email).enabled(false).build();
+
         userDAO.insert(tempUser);
 
         // Generate an activation key that is linked with this user ONLY
         final String activationKey = UUID.randomUUID().toString();
         final VerificationToken verificationToken = new VerificationToken(tempUser.getId(), activationKey);
 
-        verificationDAO.save(verificationToken);
+        verificationTokenDAO.save(verificationToken);
 
         return sendVerificationEmail(email, activationKey);
     }
@@ -95,13 +97,13 @@ public class AuthenticationService {
 
         // Search for verification token with associated activation key
         Optional<VerificationToken> verificationToken = Optional.ofNullable(
-                verificationDAO.findOne(new Query(Criteria.where("activationKey").is(activationKey)), VerificationToken.class)
+                verificationTokenDAO.findOne(new Query(Criteria.where("activationKey").is(activationKey)), VerificationToken.class)
         );
 
         if (verificationToken.isEmpty()) return new ResponseEntity<>("Activation Key does not exist", HttpStatus.FORBIDDEN);
 
 
-        // If verification object exists (someone's email successfully registered and key associated with that email), ensure that the user email (linked userId) from the verificationToken matches the given userEmail
+        // When verification object exists (someone's email successfully registered and key associated with that email), ensure that the user email (linked userId) from the verificationToken matches the given userEmail
         final String userId = verificationToken.get().getUserId();
 
         Optional<User> linkedUser = Optional.ofNullable(userDAO.findById(userId, User.class));
@@ -115,7 +117,7 @@ public class AuthenticationService {
             if (activateAccount(userId)) {
                 return new ResponseEntity<>("Account successfully activated!", HttpStatus.CREATED);
             }
-            else return new ResponseEntity<>("Account could not be activated at the moment", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Account could not be activated at the moment", HttpStatus.BAD_GATEWAY);
         }
 
         return new ResponseEntity<>("Activation Key expired!", HttpStatus.BAD_REQUEST);
@@ -154,6 +156,7 @@ public class AuthenticationService {
 
 
 
+
     /**
      *
      * Utility Methods
@@ -162,13 +165,11 @@ public class AuthenticationService {
 
     private boolean hasExpired(VerificationToken verificationToken) {
         final Calendar cal = Calendar.getInstance();
-
-        if ((verificationToken.getExpirationDate().getTime() - cal.getTime().getTime()) <= 0) {
-            return verificationDAO.remove(verificationToken).wasAcknowledged()
-                    && userDAO.remove(new Query(Criteria.where("id").is(verificationToken.getUserId())), User.class).wasAcknowledged();
-        }
-
-        return false;
+        return (verificationToken.getExpirationDate().getTime() - cal.getTime().getTime()) <= 0;
+        /*
+        return verificationTokenDAO.remove(verificationToken).wasAcknowledged()
+                && userDAO.remove(new Query(Criteria.where("id").is(verificationToken.getUserId())), User.class).wasAcknowledged();
+         */
     }
 
 
@@ -185,7 +186,7 @@ public class AuthenticationService {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(new Date().getTime());
-        calendar.add(Calendar.MINUTE, 10);
+        calendar.add(Calendar.MINUTE, 3); // TODO
 
         final Query query = new Query(Criteria.where("userId").is(userId));
 
@@ -193,7 +194,8 @@ public class AuthenticationService {
                 .set("activationKey", activationKey)
                 .set("expirationDate", new Date(calendar.getTime().getTime()));
 
-        verificationDAO.updateFirst(query, update, VerificationToken.class);
+        verificationTokenDAO.updateFirst(query, update, VerificationToken.class);
+
         return activationKey;
     }
 

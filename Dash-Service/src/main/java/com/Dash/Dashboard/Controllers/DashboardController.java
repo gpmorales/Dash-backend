@@ -38,6 +38,9 @@ public class DashboardController {
 
     final private ApplicationEventPublisher loginEventPublisher;
 
+    private OAuth2AuthorizedClientManager authorizedClientManager;
+
+
     @Autowired
     DashboardController(DashboardService dashboardService, ApplicationEventPublisher loginEventPublisher) {
         this.dashboardService = dashboardService;
@@ -48,8 +51,6 @@ public class DashboardController {
     // Client -> injected with authorization details to make calls to my Resource server
     // oidcUser -> injected after authentication with OAuth2 server (AuthenticationPrincipal) (OPTIONAL)
 
-    @Autowired
-    private OAuth2AuthorizedClientManager authorizedClientManager;
     // TODO
     /** On Startup, provide all the user's projects on their home dashboard */
     @GetMapping
@@ -58,45 +59,30 @@ public class DashboardController {
                                                                       @AuthenticationPrincipal OidcUser oidcUser) {
         try {
 
-            /*
-            OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest.withClientRegistrationId("resource-access-client")
-                    .principal(new AnonymousAuthenticationToken("key","resource-service-account", AuthorityUtils.createAuthorityList("ROLE_USER")))
-                    .build();
-
-            OAuth2AuthorizedClient resourceClient = this.authorizedClientManager.authorize(authorizeRequest);
-            */
-
             final Optional<List<Project>> projectList;
 
             log.warn(authorizedClient.getAccessToken().getTokenValue());
 
-            if (oidcUser == null) {
-                // TODO publish event to create user OR ensure user email doesnt alr exist in our IN-HOUSE-USER DB
+            // TODO publish event to create user OR ensure user email doesnt alr exist in our IN-HOUSE-USER DB
+            if (!isPresent(oidcUser)) {
                 log.warn("Github");
-                log.warn(authorizedClient.getClientRegistration().getScopes().toString());
                 projectList = dashboardService.loadAllProjects(authorizedClient, "");
-            }
-
-            else if (isPresent(oidcUser.getEmail())) {
-                // TODO publish event to create user OR ensure user email doesnt alr exist in our IN-HOUSE-USER DB
-                //loginEventPublisher.publishEvent(new OAuthUserLoginEvent(oidcUser));
+            } else if (isPresent(oidcUser.getEmail())) {
                 log.warn("Google");
-                log.warn(oidcUser.getEmail());
-                log.warn(authorizedClient.getClientRegistration().getScopes().toString());
+                //loginEventPublisher.publishEvent(new OAuthUserLoginEvent(oidcUser));
                 projectList = dashboardService.loadAllProjects(authorizedClient, oidcUser.getEmail());
             } else {
                 log.warn("DASH-OIDC");
-                log.warn(authorizedClient.getPrincipalName());
-                log.warn(authorizedClient.getClientRegistration().getScopes().toString());
                 projectList = dashboardService.loadAllProjects(authorizedClient, authorizedClient.getPrincipalName());
             }
+
 
             if (projectList.isPresent() && !projectList.get().isEmpty()) {
                 return ResponseEntity.ok().header("Content-Type", "application/json").
                         body(projectList.get());
             }
 
-            return ResponseEntity.ok().header("Content-Type", "application/json").build();
+            return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
 
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -133,7 +119,7 @@ public class DashboardController {
                 return new ResponseEntity<>(generatedProjectConfig.get(), HttpStatus.OK);
             }
 
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
 
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -141,5 +127,13 @@ public class DashboardController {
         }
     }
 
+
+    /*
+    OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest.withClientRegistrationId("resource-access-client")
+            .principal(new AnonymousAuthenticationToken("key","resource-service-account", AuthorityUtils.createAuthorityList("ROLE_USER")))
+            .build();
+
+    OAuth2AuthorizedClient resourceClient = this.authorizedClientManager.authorize(authorizeRequest);
+    */
 
 }
