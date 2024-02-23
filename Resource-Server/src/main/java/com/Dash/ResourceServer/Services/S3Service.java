@@ -72,6 +72,11 @@ public class S3Service {
 
 
 
+    /**
+     *
+     * @param projectConfig
+     * @param csvFile
+     */
     @Async
     public void uploadToS3(Project projectConfig, byte[] csvFile) {
 
@@ -107,13 +112,15 @@ public class S3Service {
 
 
 
-    // TODO
+    // TODO --> ASYNC???)
     // UPDATE Project.json config file by adding/deleting/or modifying its widgets
     /**
      * @param projectLink
      * @param widget
      * @return
      */
+
+    @Async
     public Void updateProject(String projectLink, Widget widget) {
 
         // Let's get the parsed JSON object (Project)

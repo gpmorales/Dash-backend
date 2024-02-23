@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -17,11 +16,12 @@ import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.List;
 
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(collection = "ActiveUsers")
+@Document(collection = "Users")
 public class User implements UserDetails {
 
     @Id
@@ -47,11 +47,9 @@ public class User implements UserDetails {
 
     private boolean enabled;
 
+    private Role role;
 
     public String getId() { return id; }
-
-    /** UserDetails interface methods concretely implemented here */
-    private Role role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

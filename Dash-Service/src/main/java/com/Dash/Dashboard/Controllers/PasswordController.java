@@ -1,18 +1,13 @@
 package com.Dash.Dashboard.Controllers;
 
-import com.Dash.Dashboard.Entites.PasswordResetToken;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.reactive.function.client.WebClientException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.Dash.Dashboard.Services.PasswordService;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import lombok.extern.slf4j.Slf4j;
-
-import java.util.Optional;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @Controller
@@ -28,10 +23,10 @@ public class PasswordController {
 
 
     /**
-     * Prompt user to enter email account. User must be enabled account and if so, generate Password Reset Token and send link to this User
-     * Finally send email with link to reset password that contains this Reset Token
-     * @param userEmail
-     * @return
+     * Initiates the password reset process for a user by generating a Password Reset Token & sending an email with a reset link.
+     *
+     * @param userEmail The email address provided by the user for password reset.
+     * @return ResponseEntity indicating the outcome of the operation, with an appropriate message and HTTP status code.
      */
     @ResponseBody
     @PostMapping(value ="/forgot-password", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
@@ -51,10 +46,12 @@ public class PasswordController {
 
 
 
+
     /**
-     *  This http endpoint will only be accessed via a URL sent via email
-     *  This Endpoint's purpose is to serve the user a page where they can securely enter their new password.
-     *  The presence and validity of the ticket is to ensure that the request to reset the password is legitimate.
+     * Verifies the validity of a password reset token. Redirects the user to either the password reset page or error page.
+     *
+     * @param passwordResetToken The token used to verify the password reset request.
+     * @return A URL redirect string to the password reset page if the token is valid, to the forgot password page if invalid, or to an error page upon exception.
      */
     @GetMapping(value ="/reset-password")
     public String verifyPasswordResetToken(@RequestParam("token") String passwordResetToken) {
@@ -74,11 +71,18 @@ public class PasswordController {
 
 
 
-    // TODO --- > FRONTEND CAN HANDLE SOME OF THIS LOGIC
+    /**
+     * Processes a password reset request by validating the reset token and comparing the new password entries for a match.
+     * Consumes multipart/form-data for secure transmission of sensitive information.
+     *
+     * @param passwordResetKey The token provided to the user for password reset verification.
+     * @param passwordReset The new password provided by the user.
+     * @param confirmedPasswordReset The new password re-entered by the user for confirmation.
+     * @return ResponseEntity with a success message or an error message, including the appropriate HTTP status code.
+     */
     @ResponseBody
     @PostMapping(value = "/reset-password", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<Object> resetPassword(@RequestPart("token") String passwordResetToken,
-                                                @RequestPart("user-email") String userEmail,
+    public ResponseEntity<String> resetPassword(@RequestPart("token") String passwordResetKey,
                                                 @RequestPart("password-reset") String passwordReset,
                                                 @RequestPart("re-enter-password") String confirmedPasswordReset) {
         try {
@@ -87,15 +91,9 @@ public class PasswordController {
                 return new ResponseEntity<>("Passwords do not match ..." , HttpStatus.BAD_REQUEST);
             }
 
-            final Optional<String> redirectURI = passwordService.resetUserPassword(passwordResetToken, userEmail, confirmedPasswordReset);
+            return passwordService.resetUserPassword(passwordResetKey, confirmedPasswordReset);
 
-            if (redirectURI.isPresent()) {
-                return new ResponseEntity<>(redirectURI.get(), HttpStatus.OK);
-            }
-
-            return new ResponseEntity<>("Request could not be complete at this time... " , HttpStatus.INTERNAL_SERVER_ERROR);
-
-        } catch (HttpServerErrorException | WebClientException e) {
+        } catch (Exception e) {
             return new ResponseEntity<>("Something went wrong ... " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

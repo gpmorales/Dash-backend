@@ -7,4 +7,4 @@ spring:
   data:
     mongodb:
       uri: mongodb+srv://gpmoral:gMC20002@dev-cluster.ul8671y.mongodb.net/?retryWrites=true&w=majority
-      database: UserDb
+      database: Dash-Analytics

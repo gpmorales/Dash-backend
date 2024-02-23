@@ -1,27 +1,26 @@
-package com.Dash.Authorization.Models;
+package com.Dash.Authorization.Entities;
 
-import lombok.Data;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.List;
-import java.util.Collection;
-
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.util.Collection;
+import java.util.List;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(collection = "ActiveUsers")
+@Document(collection = "Users")
 public class User implements UserDetails {
 
     @Id

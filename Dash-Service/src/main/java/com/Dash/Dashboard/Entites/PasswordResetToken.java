@@ -2,6 +2,7 @@ package com.Dash.Dashboard.Entites;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotEmpty;
@@ -25,18 +26,19 @@ public class PasswordResetToken {
 
     private Date expirationDate;
 
-    private String userId; // LINK to USER ENTITY
+    @DBRef
+    private User user; // LINK to USER ENTITY
 
-    public PasswordResetToken(String userId, String resetPasswordKey) {
+    public PasswordResetToken(User user, String resetPasswordKey) {
         this.resetPasswordKey = resetPasswordKey;
-        this.expirationDate = calculateExpirationDate(EXPIRATION_TIME);
-        this.userId = userId;
+        this.expirationDate = calculateExpirationDate();
+        this.user = user;
     }
 
-    private Date calculateExpirationDate(int expirationTime) {
+    private Date calculateExpirationDate() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(new Date().getTime());
-        calendar.add(Calendar.MINUTE, expirationTime);
+        calendar.add(Calendar.MINUTE, PasswordResetToken.EXPIRATION_TIME);
         return new Date(calendar.getTime().getTime());
     }
 

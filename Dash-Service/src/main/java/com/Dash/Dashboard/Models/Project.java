@@ -1,14 +1,12 @@
 package com.Dash.Dashboard.Models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-import lombok.Builder;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 import java.util.List;
 
 
@@ -17,7 +15,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Project {
+public class Project { // TODO -> FUTURE
 
     @Id
     @JsonProperty("projectId")

@@ -1,14 +1,14 @@
 package com.Dash.Dashboard.Controllers;
 
-import com.Dash.Dashboard.Services.AuthenticationService;
 import com.Dash.Dashboard.Models.UserRegistrationRequest;
-
+import com.Dash.Dashboard.Services.AuthenticationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import javax.validation.Valid;
 
 
@@ -24,9 +24,12 @@ public class AuthenticationController {
     }
 
 
+
     /**
-     * @param userEmail
-     * @return
+     * Initiates an access request on behalf of a user based on their email.
+     *
+     * @param userEmail The user's email address to send the activation request to.
+     * @return ResponseEntity with either a success message or an error message and appropriate HTTP status code.
      */
     @GetMapping(value = "/request-access")
     public ResponseEntity<String> getAccess(@RequestParam("email") String userEmail) {
@@ -45,18 +48,21 @@ public class AuthenticationController {
 
 
 
-    // TODO -> Once you have received an activation key, activate user account
+    /**
+     * Activates a user account using an API key.
+     *
+     * @param activationKey The unique key provided for account activation.
+     * @return ResponseEntity with success or error message, including an appropriate HTTP status code.
+     */
     @GetMapping(value = "/activate-account")
-    public ResponseEntity<String> verifyRegistration(@RequestParam("key") String activationKey, @RequestParam("email") String userEmail) {
+    public ResponseEntity<String> verifyRegistration(@RequestParam("key") String activationKey) {
         try {
 
             if (activationKey.isEmpty()) {
                 return new ResponseEntity<>("No activation key provided", HttpStatus.BAD_REQUEST);
-            } else if (userEmail.isEmpty()) {
-                return new ResponseEntity<>("No email was provided", HttpStatus.BAD_REQUEST);
             }
 
-            return authenticationService.verifyActivationKey(activationKey, userEmail);
+            return authenticationService.verifyActivationKey(activationKey);
 
         } catch (Exception e) {
             return new ResponseEntity<>("Something went wrong... " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -65,7 +71,13 @@ public class AuthenticationController {
 
 
 
-    // TODO --> After user has been verified via activation key
+    /**
+     * Registers a new user account based on the provided registration details.
+     *
+     * @param registrationRequest Contains the user's registration data.
+     * @param bindingResult Contains validation results.
+     * @return ResponseEntity with either success message or error details, including HTTP status code.
+     */
     @PostMapping(value = "/register-account", consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> registerUser(@Valid @RequestBody UserRegistrationRequest registrationRequest,
                                                BindingResult bindingResult) {

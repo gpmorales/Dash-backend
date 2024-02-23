@@ -13,7 +13,7 @@
   <url>http://www.Dash.com</url>
 
   <modules>
-      <module>OAuth-Server</module>
+      <module>OAuthorization-Server</module>
       <module>Eureka-Server</module>
       <module>Dash-Service</module>
     <module>Resource-Server</module>

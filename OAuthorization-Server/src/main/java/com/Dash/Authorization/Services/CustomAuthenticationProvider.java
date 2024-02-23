@@ -37,7 +37,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     }
 
     private Authentication checkPassword(UserDetails userDetails, String rawPassword) {
-
         if (passwordEncoder.matches(rawPassword, userDetails.getPassword())) {
             return new UsernamePasswordAuthenticationToken(
                     userDetails.getUsername(),
@@ -48,4 +47,5 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             throw new BadCredentialsException("Credentials are incorrect");
         }
     }
+
 }

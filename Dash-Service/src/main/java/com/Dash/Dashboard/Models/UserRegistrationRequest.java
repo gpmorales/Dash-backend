@@ -31,7 +31,7 @@ public class UserRegistrationRequest {
         private String password;
 
         @NotNull
-        @Pattern(regexp = "^\\+1\\d{10}$")
+        @Pattern(regexp = "^\\+1\\d{10}$") // TODO FIGURE OUT PATTERN
         private String phoneNumber;
 
 }

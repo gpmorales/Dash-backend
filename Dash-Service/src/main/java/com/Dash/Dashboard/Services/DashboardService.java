@@ -1,24 +1,26 @@
 package com.Dash.Dashboard.Services;
 
 import com.Dash.Dashboard.Models.Project;
-
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.util.UriComponentsBuilder;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient;
+
 
 
 @Service
@@ -49,7 +51,7 @@ public class DashboardService {
         final String resourceUrl = UriComponentsBuilder.fromUriString("http://127.0.0.1:8081/resources/api/all-projects/{userId}")
                     .buildAndExpand(userId).toUriString();
 
-        // Call Resource Server
+        // Hit Resource Server
         final List<Project> userProjects = this.webClient.get().uri(resourceUrl)
                                         .attributes(oauth2AuthorizedClient(client))
                                         .retrieve()
@@ -58,6 +60,7 @@ public class DashboardService {
 
         return Optional.ofNullable(userProjects);
     }
+
 
 
 
@@ -106,6 +109,7 @@ public class DashboardService {
 
 
 
+    // TODO - add Token attribute to User Entity
     public boolean userHasEnoughCredits(String userId) {
         return userId.length() > 0;
     }

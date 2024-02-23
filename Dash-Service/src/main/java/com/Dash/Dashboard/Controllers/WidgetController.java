@@ -7,10 +7,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotEmpty;
 import java.util.Optional;
 
 
+
+// TODO IN PROGRESS -- HALT FOR NOW ******************
 @Slf4j
 @RestController
 @RequestMapping("/my-dashboard/workspace")
@@ -23,8 +24,7 @@ public class WidgetController {
     }
 
 
-    // TODO - use client for ASYNC CALLS -> MAKE FRONTEND SEND ME 2 JSON OBJECTS!
-
+    // TODO - use client for ASYNC CALLS -> MAKE FRONTEND SEND ME 1 JSON OBJECTS!
     /** While working on a project, allow user to add new Widget */
     @PostMapping(value = "/add-widget")
     public ResponseEntity<Object> addWidget(@RequestPart("project-config-link") String projectLink,
@@ -97,8 +97,6 @@ public class WidgetController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
 
 
 
