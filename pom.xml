@@ -15,8 +15,8 @@
   <modules>
       <module>OAuthorization-Server</module>
       <module>Eureka-Server</module>
-      <module>Dash-Service</module>
-    <module>Resource-Server</module>
+      <module>Dashboard-Service</module>
+      <module>Resource-Server</module>
   </modules>
 
   <properties>

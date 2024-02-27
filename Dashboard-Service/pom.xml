@@ -9,7 +9,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>Dash-Service</artifactId>
+    <artifactId>Dashboard-Service</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

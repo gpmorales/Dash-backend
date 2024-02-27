@@ -9,7 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="Resource-Server" />
         <module name="Eureka-Server" />
-        <module name="Dash-Service" />
+        <module name="Dashboard-Service" />
         <module name="OAuthorization-Server" />
       </profile>
     </annotationProcessing>
