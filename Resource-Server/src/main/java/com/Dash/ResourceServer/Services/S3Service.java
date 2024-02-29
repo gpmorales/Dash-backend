@@ -82,34 +82,47 @@ public class S3Service {
     //@Async
     public void uploadToS3(Project projectConfig, MultipartFile csvFile) {
 
+        // TODO - UNDER CONSTRUCTION
+
         //log.warn("RUNS ASYNC");
+
+        final String jsonString;
+        final byte[] csvByteArray;
+
         try {
+            jsonString = (new ObjectMapper()).writeValueAsString(projectConfig);
+        } catch (JsonProcessingException e) {
+            log.warn("Error converting projectConfig to JSON: {}", e.getMessage());
+            return;
+        }
 
-            final String jsonString = (new ObjectMapper()).writeValueAsString(projectConfig);
-            final byte[] csvByteArray = csvFile.getBytes();
+        try {
+             csvByteArray = csvFile.getBytes();
+        } catch (IOException e) {
+            log.warn("Error reading bytes from csvFile: {}", e.getMessage());
+            return;
+        }
 
-            try (final InputStream csvStream = new ByteArrayInputStream(csvByteArray);
-                 final InputStream jsonStream = new ByteArrayInputStream(jsonString.getBytes())) {
 
-                // Upload CSV
-                final String csvFileLocation = projectConfig.getCsvSheetLink();
-                ObjectMetadata csvMetaData = new ObjectMetadata();
-                csvMetaData.setContentLength(csvByteArray.length);
-                amazonS3Client.putObject(new PutObjectRequest(bucket, csvFileLocation, csvStream, csvMetaData));
+        try (final InputStream csvStream = new ByteArrayInputStream(csvByteArray);
+             final InputStream jsonStream = new ByteArrayInputStream(jsonString.getBytes())) {
 
-                // Upload Json
-                final String jsonFileLocation = csvFileLocation.replace(".csv", ".json");
-                ObjectMetadata jsonMetaData = new ObjectMetadata();
-                jsonMetaData.setContentLength(jsonString.getBytes().length);
-                amazonS3Client.putObject(new PutObjectRequest(bucket, jsonFileLocation, jsonStream, jsonMetaData));
+            // Upload CSV
+            final String csvFileLocation = projectConfig.getCsvSheetLink();
+            ObjectMetadata csvMetaData = new ObjectMetadata();
+            csvMetaData.setContentLength(csvByteArray.length);
+            amazonS3Client.putObject(new PutObjectRequest(bucket, csvFileLocation, csvStream, csvMetaData));
 
-            } catch (IOException e) {
-                log.warn(e.getMessage());
-            }
+            // Upload Json
+            final String jsonFileLocation = csvFileLocation.replace(".csv", ".json");
+            ObjectMetadata jsonMetaData = new ObjectMetadata();
+            jsonMetaData.setContentLength(jsonString.getBytes().length);
+            amazonS3Client.putObject(new PutObjectRequest(bucket, jsonFileLocation, jsonStream, jsonMetaData));
 
         } catch (IOException e) {
             log.warn(e.getMessage());
         }
+
     }
 
 

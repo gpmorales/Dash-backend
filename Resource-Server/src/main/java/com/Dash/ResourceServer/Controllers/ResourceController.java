@@ -57,7 +57,7 @@ public class ResourceController {
      * Generates a new project directory with a CSV sheet file and a generated JSON config file that includes the dashboard & widgets setup, and relevant links, derived from the template Project config
      *
      * @param templateProject
-     * @param csvByteArray
+     * @param csvFile
      * @return
      */
     @PostMapping(value = "/generate-project", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
