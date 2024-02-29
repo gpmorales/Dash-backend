@@ -12,6 +12,9 @@ spring:
       uri: mongodb+srv://gpmoral:gMC20002@dev-cluster.ul8671y.mongodb.net/?retryWrites=true&w=majority
       database: Dash-Analytics
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
 
   security:
     oauth2:

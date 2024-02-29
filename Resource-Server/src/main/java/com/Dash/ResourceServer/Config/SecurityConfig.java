@@ -13,7 +13,6 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http.authorizeRequests().mvcMatchers("/resources/**")
                 .access("hasAuthority('SCOPE_api.read')")
                 .and()
@@ -22,6 +21,5 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 
 }

@@ -5,6 +5,7 @@ import com.Dash.ResourceServer.Models.Widget;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -77,32 +79,33 @@ public class S3Service {
      * @param projectConfig
      * @param csvFile
      */
-    @Async
-    public void uploadToS3(Project projectConfig, byte[] csvFile) {
+    //@Async
+    public void uploadToS3(Project projectConfig, MultipartFile csvFile) {
 
-        log.warn("RUNS ASYNC");
+        //log.warn("RUNS ASYNC");
+        try {
 
-        if (true) return;
+            final String jsonString = (new ObjectMapper()).writeValueAsString(projectConfig);
+            final byte[] csvByteArray = csvFile.getBytes();
 
-        try (final InputStream csvStream = new ByteArrayInputStream(csvFile)) {
+            try (final InputStream csvStream = new ByteArrayInputStream(csvByteArray);
+                 final InputStream jsonStream = new ByteArrayInputStream(jsonString.getBytes())) {
 
-            // Upload CSV
-            final String csvFileLocation = projectConfig.getCsvSheetLink();
+                // Upload CSV
+                final String csvFileLocation = projectConfig.getCsvSheetLink();
+                ObjectMetadata csvMetaData = new ObjectMetadata();
+                csvMetaData.setContentLength(csvByteArray.length);
+                amazonS3Client.putObject(new PutObjectRequest(bucket, csvFileLocation, csvStream, csvMetaData));
 
-            final ObjectMetadata csvMetadata = new ObjectMetadata();
-            csvMetadata.setContentLength(csvFile.length);
+                // Upload Json
+                final String jsonFileLocation = csvFileLocation.replace(".csv", ".json");
+                ObjectMetadata jsonMetaData = new ObjectMetadata();
+                jsonMetaData.setContentLength(jsonString.getBytes().length);
+                amazonS3Client.putObject(new PutObjectRequest(bucket, jsonFileLocation, jsonStream, jsonMetaData));
 
-            amazonS3Client.putObject(new PutObjectRequest(bucket, csvFileLocation, csvStream, csvMetadata));
-
-            // TODO - Upload Json  (start with Json String)
-            String jsonString = (new ObjectMapper()).writeValueAsString(projectConfig);
-            final InputStream jsonStream = new ByteArrayInputStream(jsonString.getBytes());
-            final ObjectMetadata jsonMetadata = new ObjectMetadata();
-            jsonMetadata.setContentLength(jsonString.getBytes().length);
-
-            final String jsonFileLocation = csvFileLocation.replace(".csv", ".json");
-
-            amazonS3Client.putObject(new PutObjectRequest(bucket, jsonFileLocation, jsonStream, jsonMetadata));
+            } catch (IOException e) {
+                log.warn(e.getMessage());
+            }
 
         } catch (IOException e) {
             log.warn(e.getMessage());

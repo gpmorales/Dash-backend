@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,11 +62,11 @@ public class ResourceController {
      */
     @PostMapping(value = "/generate-project", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public Optional<Project> addProject(@RequestPart("template-project") Project templateProject,
-                                        @RequestPart("csv-data") byte[] csvByteArray) {
+                                        @RequestPart("csv-file") MultipartFile csvFile) {
         try {
 
             // TODO Create Config with GPT API
-            //final String generatedProjectConfig = gptService.promptGptWith(project);
+            //final String generatedProjectConfig = gptService.promptGpt(project);
             final Optional<Project> generatedProjectConfig = gptService.promptGptWith(templateProject);
 
             if (generatedProjectConfig.isEmpty()) {
@@ -73,11 +74,11 @@ public class ResourceController {
                 // TODO generate default widgets??
                 List<Widget> defaultWidgets = new ArrayList<>(6);
                 templateProject.setWidgets(defaultWidgets);
-                resourceService.uploadToS3(templateProject, csvByteArray);
+                resourceService.uploadToS3(templateProject, csvFile);
                 return Optional.of(templateProject);
             }
 
-            resourceService.uploadToS3(generatedProjectConfig.get(), csvByteArray);
+            resourceService.uploadToS3(generatedProjectConfig.get(), csvFile);
 
             return generatedProjectConfig;
 

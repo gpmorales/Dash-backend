@@ -1,4 +1,4 @@
-Bucket: my-dashboard-app
+Bucket: dash-analytics-test
 
 Object Paths:
 

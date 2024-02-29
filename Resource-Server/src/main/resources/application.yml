@@ -6,11 +6,15 @@ spring:
   application:
     name: Resource-Server
 
-  security:
-    oauth2:
-      resource-server:
-        jwt:
-          issuer-uri: http://auth-server:9000
+  servlet:
+    multipart:
+      max-file-size: 5MB
+
+  #security:
+    #oauth2:
+      #resource-server:
+        #jwt:
+          #issuer-uri: http://auth-server:9000
 
 
 application:

@@ -47,9 +47,9 @@ public class DashboardController {
      * @return ResponseEntity containing a list of {@link Project} objects for the authenticated user, or an appropriate HTTP status code in case of errors or empty data.
      */
     @GetMapping
-    public ResponseEntity<List<Project>> loadDashboardForGoogleClient(@RegisteredOAuth2AuthorizedClient("resource-access-client")
-                                                                      OAuth2AuthorizedClient authorizedClient,
-                                                                      @AuthenticationPrincipal OidcUser oidcUser) {
+    public ResponseEntity<List<Project>> loadDashboard(@RegisteredOAuth2AuthorizedClient("resource-access-client")
+                                                       OAuth2AuthorizedClient authorizedClient,
+                                                       @AuthenticationPrincipal OidcUser oidcUser) {
         try {
 
             // authorizedClient -> injected with authorization details to make calls to my Resource server
@@ -89,7 +89,6 @@ public class DashboardController {
 
 
 
-    // TODO ---> HOW DO WE HAVE CLIENT INJECTED AUTO? *****************
     /**
      * Handles the creation of a new project by processing provided project details and an optional CSV file.
      *
@@ -104,11 +103,12 @@ public class DashboardController {
                                                  @RequestPart("csv-file") MultipartFile csvFile) {
                                                  //@RegisteredOAuth2AuthorizedClient("resource-access-client")
                                                  //OAuth2AuthorizedClient authorizedClientConfig) { // TODO - UNCOMMENT
+
+        // TODO ---> HOW DO WE HAVE CLIENT INJECTED AUTO? *****************
+
         try {
 
             // TODO - UNDER CONSTRUCTION
-            if (true) return new ResponseEntity<>(new Project(), HttpStatus.OK);
-
             // Ensure request can be made by user
             if (!dashboardService.userHasEnoughCredits("userId")) {
                 log.warn("You do not sufficient credits to create a new project ... ");
